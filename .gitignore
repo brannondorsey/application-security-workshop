@@ -1,3 +1,6 @@
 node_modules
 stolen-data
 dist
+.DS_Store
+vulnerable-services/credentials/*
+!vulnerable-services/credentials/.gitkeep

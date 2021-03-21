@@ -1,2 +1,4 @@
 node_modules
 dist
+vulnerable-services/credentials/*
+!vulnerable-services/credentials/.gitkeep

