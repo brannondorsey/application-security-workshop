@@ -1,0 +1,18 @@
+version: "3"
+services:
+  vulnerable-services:
+    image: brannondorsey/app-sec-workshop
+    container_name: vulnerable-services
+    hostname: vulnerable-services
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    entrypoint: ['npm', 'run', 'start-vulnerable']
+  attacker-controlled-services:
+    image: brannondorsey/app-sec-workshop
+    container_name: attacker-controlled-services
+    hostname: attacker-controlled-services
+    restart: unless-stopped
+    ports:
+      - 1337:1337
+    entrypoint: ['npm', 'run', 'start-attacker-controlled']

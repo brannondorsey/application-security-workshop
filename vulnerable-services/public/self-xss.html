@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+  <title>Self XSS</title>
+</head>
+<body>
+  <h2>Word concatenater</h2>
+  <input id="first" type="text" value="cat"></input> +
+  <input id="second" type="text" value="dog"></input> =
+  <span id="result"></span>
+  <br>
+  <br>
+  <button id="submit">Submit</button>
+  <script>
+    document.getElementById('submit').onclick = add
+
+    function add() {
+      const first = document.getElementById('first').value
+      const second = document.getElementById('second').value
+      document.getElementById('result').innerHTML = first + second
+    }
+  </script>
+</body>
