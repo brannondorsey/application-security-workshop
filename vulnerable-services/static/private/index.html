@@ -4,6 +4,7 @@
 </head>
 <body>
   <h2>Examples</h2>
+  <p>Welcome, <span class="username"></span>!</p>
   <ul>
     <li>
       Cross-Site Scripting XSS
@@ -14,4 +15,20 @@
       </ul>
     </li>
   </ul>
+  <p>
+    <a onclick="logout" href="/">Log out</button>
+  </p>
+  <script>
+    (function setUsernameBasedOnCookie() {
+      const cookies = document.cookie.split(' ')
+      const username = cookies
+                      .filter(cookie => cookie.startsWith('authToken'))
+                      .map(cookie => cookie.match(/authToken=s%3A(.*)\..*/))[0][1]
+      if (username) {
+        Array.from(document.getElementsByClassName('username'))
+                            .map(el => {
+                              el.innerHTML = `<strong>${decodeURIComponent(username)}</strong>`})
+      }
+    })()
+  </script>
 </body>

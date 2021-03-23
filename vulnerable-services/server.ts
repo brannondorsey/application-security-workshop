@@ -2,11 +2,12 @@ import * as express from 'express'
 import { Request, Response } from 'express'
 import { urlencoded } from 'body-parser'
 import * as cookieParser from 'cookie-parser'
-import { readdir, writeFile } from 'fs/promises'
+import { readdir, writeFile, readFile } from 'fs/promises'
 import { md5Hex } from '../util'
 
 const COOKIE_SECRET = '295C7B93-3CD8-4366-9BD9-109468A33218'
 const CREDENTIALS_DIR = __dirname + '/../../vulnerable-services/credentials'
+const HISTORY_DIR = __dirname + '/../../vulnerable-services/history'
 const STATIC_DIR = __dirname + '/../../vulnerable-services/static'
 
 const app = express()
@@ -23,7 +24,7 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body
   const success = await validateLoginCredentials(username, password)
   if (success) {
-    setLoginCookie(res)
+    setLoginCookie(username, res)
     res.redirect('/private')
   } else {
     res.redirect('/?loginError=true')
@@ -33,8 +34,22 @@ app.post('/login', async (req, res) => {
 app.post('/register', async (req, res) => {
   const { username, password } = req.body
   await registerCredentials(username, password)
-  setLoginCookie(res)
+  setLoginCookie(username, res)
   res.redirect('/private')
+})
+
+app.post('/save-result', async (req, res) => {
+  const result = req.body.result
+  if (result) {
+    await saveResult(result)
+    res.status(204).send()
+  } else {
+    res.status(400).send('No result sent')
+  }
+})
+
+app.get('/result-history', async (_, res) => {
+  res.json({ results: await loadResults() })
 })
 
 app.use(express.static(STATIC_DIR))
@@ -63,11 +78,27 @@ async function validateLoginCredentials(
   return candidates.includes(match)
 }
 
-function setLoginCookie(res: Response) {
-  res.cookie('authToken', 'valid', { signed: true })
+function setLoginCookie(username: string, res: Response) {
+  res.cookie('authToken', username, { signed: true })
 }
 
 function loginCookieIsValid(req: Request): boolean {
-  const signedCookies = req.signedCookies
-  return signedCookies['authToken'] === 'valid'
+  const username = req.signedCookies['authToken']
+  return typeof username === 'string' && username.length > 0
+}
+
+async function saveResult(result: string) {
+  const millis = new Date().getTime()
+  const filename = `${HISTORY_DIR}/${millis}`
+  await writeFile(filename, result)
+}
+
+async function loadResults(): Promise<string[]> {
+  const basenames = await readdir(HISTORY_DIR)
+  const filenames = basenames.map((basename) => `${HISTORY_DIR}/${basename}`)
+  filenames.sort()
+  const buffers = await Promise.all(
+    filenames.map((filename) => readFile(filename))
+  )
+  return buffers.map((buffer) => buffer.toString()).filter((str) => str != '')
 }

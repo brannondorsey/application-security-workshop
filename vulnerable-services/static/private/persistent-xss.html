@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<head>
+  <title>Self XSS</title>
+</head>
+<body>
+  <h2>Word concatenater</h2>
+  <input id="first" type="text" value="cat"></input> +
+  <input id="second" type="text" value="dog"></input> =
+  <span id="result"></span>
+  <br>
+  <br>
+  <button id="submit">Submit</button>
+  <div>
+    <h3>History</h3>
+    <ul id="history-list">
+    </ul>
+  </div>
+ <script>
+
+
+    document.getElementById('submit').onclick = add
+    setDefaults()
+    fetchAndDisplayWordHistory()
+
+    async function add() {
+      const first = document.getElementById('first').value
+      const second = document.getElementById('second').value
+      const result = first + second
+      document.getElementById('result').innerHTML = result
+      await saveResult(result)
+      await fetchAndDisplayWordHistory()
+    }
+
+    async function setDefaults() {
+      let params = new URLSearchParams(document.location.search.substring(1));
+      const firstValue = params.get("first")
+      const secondValue = params.get("second")
+      const autoSubmit = (params.get("autoSubmit") || "").toLowerCase() === "true"
+      if (firstValue) {
+        document.getElementById('first').value = firstValue
+      }
+      if (secondValue) {
+        document.getElementById('second').value = secondValue
+      }
+      if (autoSubmit) add()
+    }
+
+    async function fetchAndDisplayWordHistory() {
+      const history = await fetchWordHistory()
+      const ul = document.getElementById('history-list')
+      ul.innerHTML = ''
+      for (let item of history) {
+        const li = document.createElement('li')
+        li.innerHTML = item
+        ul.appendChild(li)
+      }
+    }
+
+    async function fetchWordHistory() {
+      const response = await fetch(`${location.origin}/result-history`)
+      const { results } = await response.json()
+      return results
+    }
+
+    async function saveResult(result) {
+      await fetch(`${location.origin}/save-result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `result=${encodeURIComponent(result)}`,
+      })
+    }
+
+
+  </script>
+</body>
