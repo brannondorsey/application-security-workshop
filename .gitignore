@@ -6,3 +6,4 @@ vulnerable-services/credentials/*
 !vulnerable-services/credentials/.gitkeep
 vulnerable-services/history/*
 !vulnerable-services/history/.gitkeep
+requests.log

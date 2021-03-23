@@ -1,18 +1,22 @@
-import * as express from 'express'
-import { Request, Response } from 'express'
+import express from 'express'
+import { Request, Response, Express } from 'express'
 import { urlencoded } from 'body-parser'
-import * as cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser'
+import morganBody from 'morgan-body'
 import { readdir, writeFile, readFile } from 'fs/promises'
+import { createWriteStream } from 'fs'
 import { md5Hex } from '../util'
 
 const COOKIE_SECRET = '295C7B93-3CD8-4366-9BD9-109468A33218'
 const CREDENTIALS_DIR = __dirname + '/../../vulnerable-services/credentials'
 const HISTORY_DIR = __dirname + '/../../vulnerable-services/history'
 const STATIC_DIR = __dirname + '/../../vulnerable-services/static'
+const LOG_FILE = __dirname + '/../../vulnerable-services/requests.log'
 
 const app = express()
-app.use(urlencoded())
 app.use(cookieParser(COOKIE_SECRET))
+app.use(urlencoded())
+configureLogging(app)
 
 app.use('/private', (req, res, next) => {
   const valid = loginCookieIsValid(req)
@@ -101,4 +105,15 @@ async function loadResults(): Promise<string[]> {
     filenames.map((filename) => readFile(filename))
   )
   return buffers.map((buffer) => buffer.toString()).filter((str) => str != '')
+}
+
+function configureLogging(app: Express) {
+  if (process.env['DEBUG'] === '1') {
+    console.log(`DEBUG=1, logging requests to ${LOG_FILE}`)
+    const log = createWriteStream(LOG_FILE, { flags: 'a' })
+    morganBody(app, {
+      noColors: true,
+      stream: log,
+    })
+  }
 }

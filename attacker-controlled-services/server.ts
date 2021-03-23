@@ -1,5 +1,5 @@
-import * as express from 'express'
-import * as cors from 'cors'
+import express from 'express'
+import cors from 'cors'
 import { mkdir, writeFile } from 'fs/promises'
 import { md5Hex } from '../util'
 

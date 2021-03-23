@@ -21,7 +21,8 @@
       "outDir": "./dist",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "rootDir": "./"
+      "rootDir": "./",
+      "esModuleInterop": true,
   },
   "include": [
       "**/*",
@@ -30,5 +31,5 @@
   "exclude": [
       "dist",
       "node_modules"
-  ]
+  ],
 }

@@ -5,6 +5,8 @@ services:
     container_name: vulnerable-services
     hostname: vulnerable-services
     restart: unless-stopped
+    environment:
+      DEBUG: '1'
     ports:
       - 8080:8080
     entrypoint: ['npm', 'run', 'start-vulnerable']
