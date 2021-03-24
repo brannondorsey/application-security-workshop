@@ -3,9 +3,11 @@ import { Request, Response, Express } from 'express'
 import { urlencoded } from 'body-parser'
 import cookieParser from 'cookie-parser'
 import morganBody from 'morgan-body'
-import { readdir, writeFile, readFile } from 'fs/promises'
+import { readdir, writeFile, readFile, access } from 'fs/promises'
 import { createWriteStream } from 'fs'
 import { md5Hex } from '../util'
+import { exec } from 'child_process'
+import path from 'path'
 
 const COOKIE_SECRET = '295C7B93-3CD8-4366-9BD9-109468A33218'
 const CREDENTIALS_DIR = __dirname + '/../../vulnerable-services/credentials'
@@ -54,6 +56,20 @@ app.post('/save-result', async (req, res) => {
 
 app.get('/result-history', async (_, res) => {
   res.json({ results: await loadResults() })
+})
+
+app.get('/extract-frame', async (req, res) => {
+  const { videoUrl, frameSeconds } = req.query
+  try {
+    const frame = await extractFrame(
+      videoUrl as string,
+      parseInt(frameSeconds as string)
+    )
+    res.contentType('image/jpeg').send(frame)
+  } catch (err) {
+    console.log(err)
+    res.status(500).send('Internal server error')
+  }
 })
 
 app.use(express.static(STATIC_DIR))
@@ -116,4 +132,40 @@ function configureLogging(app: Express) {
       stream: log,
     })
   }
+}
+
+async function extractFrame(
+  videoUrl: string,
+  frameSeconds: number
+): Promise<Buffer> {
+  const filename = await downloadFile(videoUrl)
+  const { stdout } = await runCommand(
+    `ffmpeg -ss ${frameSeconds} -i ${filename} -frames:v 1 -f mjpeg -`
+  )
+  return stdout
+}
+
+async function downloadFile(url: string): Promise<string> {
+  const filename = path.join('/tmp', md5Hex(url))
+  try {
+    await access(filename)
+  } catch {
+    await runCommand(`wget -L -O ${filename} ${url}`)
+  }
+  return filename
+}
+
+async function runCommand(
+  command: string
+): Promise<{ stdout: Buffer; stderr: Buffer }> {
+  return new Promise((resolve, reject) => {
+    exec(
+      command,
+      { encoding: 'buffer', shell: '/bin/bash' },
+      (err, stdout: Buffer, stderr: Buffer) => {
+        if (err) reject(err)
+        resolve({ stdout, stderr })
+      }
+    )
+  })
 }

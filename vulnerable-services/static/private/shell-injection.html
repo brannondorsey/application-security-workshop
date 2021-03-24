@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<head>
+  <title>Shell Injection</title>
+</head>
+<body>
+  <h2>Frame Extractor</h2>
+  <label for="url">Video URL</label>
+  <input id="url" style="width:500px" type="text" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"></input>
+  <br>
+  <label for="frame-number">Frame Number in Seconds</label>
+  <input id="frame-number" type="number" value="3"></input>
+  <br>
+  <button id="submit">Submit</button>
+  <br>
+  <div id="frame"></div>
+  <script>
+    document.getElementById('submit').onclick = extractFrame
+
+    function extractFrame() {
+      const videoUrl = encodeURIComponent(document.getElementById('url').value)
+      const frameSeconds = encodeURIComponent(document.getElementById('frame-number').value)
+      document.getElementById('frame').innerHTML = `<img src="${document.location.origin}/extract-frame?videoUrl=${videoUrl}&frameSeconds=${frameSeconds}" style="max-width: 500px;">`
+    }
+  </script>
+</body>
