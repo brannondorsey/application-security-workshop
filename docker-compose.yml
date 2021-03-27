@@ -1,7 +1,12 @@
 version: "3"
 services:
   vulnerable-services:
-    image: brannondorsey/app-sec-workshop
+    image: brannondorsey/app-sec-workshop:vulnerable-services
+    build:
+      dockerfile: Dockerfile
+      context: ./
+      args:
+        FILES_TO_REMOVE: attacker-controlled-services
     container_name: vulnerable-services
     hostname: vulnerable-services
     restart: unless-stopped
@@ -11,7 +16,12 @@ services:
       - 8080:8080
     entrypoint: ['npm', 'run', 'start-vulnerable']
   attacker-controlled-services:
-    image: brannondorsey/app-sec-workshop
+    image: brannondorsey/app-sec-workshop:attacker-controlled-services
+    build:
+      dockerfile: Dockerfile
+      context: ./
+      args:
+        FILES_TO_REMOVE: vulnerable-services
     container_name: attacker-controlled-services
     hostname: attacker-controlled-services
     restart: unless-stopped

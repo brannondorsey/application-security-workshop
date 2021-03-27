@@ -3,7 +3,7 @@
 default: run
 
 build:
-	docker build -t brannondorsey/app-sec-workshop .
+	docker-compose build
 
 run: build
 	docker-compose up
