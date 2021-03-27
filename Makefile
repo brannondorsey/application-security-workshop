@@ -1,4 +1,4 @@
-.PHONY: default build run
+.PHONY: default build run login-vulnerable-services login-attacker-controlled-services
 
 default: run
 
